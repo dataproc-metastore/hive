@@ -242,9 +242,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   /** MM write states. */
   public static final char MM_WRITE_OPEN = 'o', MM_WRITE_COMMITTED = 'c', MM_WRITE_ABORTED = 'a';
 
-  private static HadoopThriftAuthBridge.Server saslServer;
+  static HadoopThriftAuthBridge.Server saslServer;
   private static MetastoreDelegationTokenManager delegationTokenManager;
-  private static boolean useSasl;
+  static boolean useSasl;
 
   static final String NO_FILTER_STRING = "";
   static final int UNLIMITED_MAX_PARTITIONS = -1;
@@ -10740,7 +10740,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
   }
 
-  private static void cleanupRawStore() {
+  static void cleanupRawStore() {
     try {
       RawStore rs = HMSHandler.getRawStore();
       if (rs != null) {
