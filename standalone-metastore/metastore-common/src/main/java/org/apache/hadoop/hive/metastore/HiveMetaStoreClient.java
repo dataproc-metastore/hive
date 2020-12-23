@@ -193,6 +193,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
     String msUri = MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS);
     localMetaStore = MetastoreConf.isEmbeddedMetaStore(msUri);
+
+    String customClientClassName = MetastoreConf.getVar(conf, ConfVars.CUSTOM_SERVER_CLASS);
+    if (customClientClassName != null) {
+      try {
+        client = (ThriftHiveMetastore.Iface) Class.forName(customClientClassName).newInstance();
+        isConnected = true;
+        snapshotActiveConf();
+        return;
+      } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+        e.printStackTrace();
+      }
+    }
+
+
     if (localMetaStore) {
       if (!allowEmbedded) {
         throw new MetaException("Embedded metastore is not allowed here. Please configure "
