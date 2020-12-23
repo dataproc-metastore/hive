@@ -1063,7 +1063,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void shutdown() {
-    HiveMetaStore.cleanupRawStore();
+    ThriftMetastoreLauncher.cleanupRawStore();
     PerfLogger.getPerfLogger(false).cleanupPerfLogMetrics();
     ThreadPool.shutdown();
   }
