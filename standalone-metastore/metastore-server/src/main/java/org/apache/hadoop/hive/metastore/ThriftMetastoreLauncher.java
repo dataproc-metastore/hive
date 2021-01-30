@@ -324,13 +324,13 @@ public class ThriftMetastoreLauncher implements MetastoreLauncher{
         rs.shutdown();
       }
     } finally {
-      HMSHandler handler = HMSHandler.threadLocalHMSHandler.get();
+      HMSHandler handler = HMSHandler.THREAD_LOCAL_HMS_HANDLER.get();
       if (handler != null) {
         handler.notifyMetaListenersOnShutDown();
       }
-      HMSHandler.threadLocalHMSHandler.remove();
-      HMSHandler.threadLocalConf.remove();
-      HMSHandler.threadLocalModifiedConfig.remove();
+      HMSHandler.THREAD_LOCAL_HMS_HANDLER.remove();
+      HMSHandler.THREAD_LOCAL_CONF.remove();
+      HMSHandler.THREAD_LOCAL_MODIFIED_CONFIG.remove();
       HMSHandler.removeRawStore();
       HMSHandler.logAndAudit("Done cleaning up thread local RawStore");
     }
