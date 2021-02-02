@@ -423,6 +423,23 @@ public class MetastoreConf {
             "name for a custom Hive Metastore server."),
     CUSTOM_CLIENT_MANAGER("metastore.custom.client.manager.class", "hive.metastore.custom.client.manager.class", "",
         "Client manager class name for a custom Hive client bootstrapping."),
+    GRPC_CLIENT_PORT("metastore.grpc.client.port", "hive.metastore.grpc.client.port", "",
+        "GRPC client connection port. The parameter will be used if CUSTOM_CLIENT_MANAGER is set and proper library " +
+            "is on the classpath."),
+    GRPC_CLIENT_METASTOREURIS("metastore.grpc.client.metastoreuris", "hive.metastore.grpc.client.metastoreuris", "",
+        "GRPC client metastore URI list, comma delimited. Will be used if CUSTOM_CLIENT_MANAGER is set and a proper " +
+            "library is on the classpath."),
+    GRPC_SERVER_PORT("metastore.grpc.server.port", "hive.metastore.grpc.server.port", "",
+        "GRPC server port. Will be used if CUSTOM_SERVER_CLASS is set and a proper library is on the classpath."),
+    GRPC_SERVER_MAX_THREADS("metastore.grpc.server.maxThreads", "hive.metastore.grpc.server.maxThreads", 4,
+        "GRPC server max thread count, will be used if CUSTOM_SERVER_CLASS is set and a " +
+            "proper library is on the classpath."),
+    GRPC_SERVER_MIN_THREADS("metastore.grpc.server.minThreads", "hive.metastore.grpc.server.minThreads", 1,
+        "GRPC server min thread count, will be used if CUSTOM_SERVER_CLASS is set and a " +
+            "proper library is on the classpath."),
+    GRPC_SERVER_KEEPALIVE_TIME("metastore.grpc.server.keepAliveTime", "hive.metastore.grpc.server.keepAliveTime", 1,
+        "GRPC server keepalive time in seconds, will be used if CUSTOM_SERVER_CLASS is set and a " +
+            "proper library is on the classpath."),
     METASTORE_HOUSEKEEPING_LEADER_HOSTNAME("metastore.housekeeping.leader.hostname",
             "hive.metastore.housekeeping.leader.hostname", "",
 "If there are multiple Thrift metastore services running, the hostname of Thrift metastore " +
