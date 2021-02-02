@@ -258,7 +258,7 @@ public class ThriftMetastoreLauncher implements MetastoreLauncher{
     HMSHandler.LOG
         .info("hive.metastore.runworker.in = {}", MetastoreConf.getVar(conf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN));
     HMSHandler.LOG.info("metastore.compactor.history.retention.attempted = {}",
-        MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED));
+        MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE));
     HMSHandler.LOG.info("metastore.compactor.history.retention.failed = {}",
         MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED));
     HMSHandler.LOG.info("metastore.compactor.history.retention.succeeded = {}",

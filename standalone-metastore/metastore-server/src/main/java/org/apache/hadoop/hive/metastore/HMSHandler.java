@@ -219,7 +219,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   private Warehouse wh; // hdfs warehouse
   private static Striped<Lock> tablelocks;
-  private static final ThreadLocal<RawStore> threadLocalMS =
+  private static final ThreadLocal<RawStore> THREAD_LOCAL_MS =
       new ThreadLocal<RawStore>() {
         @Override
         protected RawStore initialValue() {
@@ -243,7 +243,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       };
 
   public static RawStore getRawStore() {
-    return threadLocalMS.get();
+    return THREAD_LOCAL_MS.get();
   }
 
   static void cleanupRawStore() {
@@ -254,25 +254,25 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         rs.shutdown();
       }
     } finally {
-      HMSHandler handler = threadLocalHMSHandler.get();
+      HMSHandler handler = THREAD_LOCAL_HMS_HANDLER.get();
       if (handler != null) {
         handler.notifyMetaListenersOnShutDown();
       }
-      threadLocalHMSHandler.remove();
-      threadLocalConf.remove();
-      threadLocalModifiedConfig.remove();
+      THREAD_LOCAL_HMS_HANDLER.remove();
+      THREAD_LOCAL_CONF.remove();
+      THREAD_LOCAL_MODIFIED_CONFIG.remove();
       removeRawStore();
       logAndAudit("Done cleaning up thread local RawStore");
     }
   }
 
   static void removeRawStore() {
-    threadLocalMS.remove();
+    THREAD_LOCAL_MS.remove();
   }
 
   // Thread local configuration is needed as many threads could make changes
   // to the conf using the connection hook
-  private static final ThreadLocal<Configuration> threadLocalConf =
+  static final ThreadLocal<Configuration> THREAD_LOCAL_CONF =
       new ThreadLocal<Configuration>() {
         @Override
         protected Configuration initialValue() {
@@ -283,12 +283,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   /**
    * Thread local HMSHandler used during shutdown to notify meta listeners
    */
-  private static final ThreadLocal<HMSHandler> threadLocalHMSHandler = new ThreadLocal<>();
+  static final ThreadLocal<HMSHandler> THREAD_LOCAL_HMS_HANDLER = new ThreadLocal<>();
 
   /**
    * Thread local Map to keep track of modified meta conf keys
    */
-  private static final ThreadLocal<Map<String, String>> threadLocalModifiedConfig =
+  static final ThreadLocal<Map<String, String>> THREAD_LOCAL_MODIFIED_CONFIG =
       new ThreadLocal<>();
 
   private static ExecutorService threadPool;
@@ -368,14 +368,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    * Internal function to notify listeners to revert back to old values of keys
    * that were modified during setMetaConf. This would get called from HiveMetaStore#cleanupRawStore
    */
-  private void notifyMetaListenersOnShutDown() {
-    Map<String, String> modifiedConf = threadLocalModifiedConfig.get();
+  void notifyMetaListenersOnShutDown() {
+    Map<String, String> modifiedConf = THREAD_LOCAL_MODIFIED_CONFIG.get();
     if (modifiedConf == null) {
       // Nothing got modified
       return;
     }
     try {
-      Configuration conf = threadLocalConf.get();
+      Configuration conf = THREAD_LOCAL_CONF.get();
       if (conf == null) {
         throw new MetaException("Unexpected: modifiedConf is non-null but conf is null");
       }
@@ -704,14 +704,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    * Set copy of invoking HMSHandler on thread local
    */
   private static void setHMSHandler(HMSHandler handler) {
-    if (threadLocalHMSHandler.get() == null) {
-      threadLocalHMSHandler.set(handler);
+    if (THREAD_LOCAL_HMS_HANDLER.get() == null) {
+      THREAD_LOCAL_HMS_HANDLER.set(handler);
     }
   }
   @Override
   public void setConf(Configuration conf) {
-    threadLocalConf.set(conf);
-    RawStore ms = threadLocalMS.get();
+    THREAD_LOCAL_CONF.set(conf);
+    RawStore ms = THREAD_LOCAL_MS.get();
     if (ms != null) {
       ms.setConf(conf); // reload if DS related configuration is changed
     }
@@ -719,19 +719,19 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public Configuration getConf() {
-    Configuration conf = threadLocalConf.get();
+    Configuration conf = THREAD_LOCAL_CONF.get();
     if (conf == null) {
       conf = new Configuration(this.conf);
-      threadLocalConf.set(conf);
+      THREAD_LOCAL_CONF.set(conf);
     }
     return conf;
   }
 
   private Map<String, String> getModifiedConf() {
-    Map<String, String> modifiedConf = threadLocalModifiedConfig.get();
+    Map<String, String> modifiedConf = THREAD_LOCAL_MODIFIED_CONFIG.get();
     if (modifiedConf == null) {
       modifiedConf = new HashMap<>();
-      threadLocalModifiedConfig.set(modifiedConf);
+      THREAD_LOCAL_MODIFIED_CONFIG.set(modifiedConf);
     }
     return modifiedConf;
   }
@@ -793,7 +793,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   public static RawStore getMSForConf(Configuration conf) throws MetaException {
-    RawStore ms = threadLocalMS.get();
+    RawStore ms = THREAD_LOCAL_MS.get();
     if (ms == null) {
       ms = newRawStoreForConf(conf);
       try {
@@ -802,8 +802,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         ms.shutdown();
         throw e;
       }
-      threadLocalMS.set(ms);
-      ms = threadLocalMS.get();
+      THREAD_LOCAL_MS.set(ms);
+      ms = THREAD_LOCAL_MS.get();
       LOG.info("Created RawStore: " + ms + " from thread id: " + Thread.currentThread().getId());
     }
     return ms;
@@ -1011,7 +1011,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  private static void logAndAudit(final String m) {
+  static void logAndAudit(final String m) {
     LOG.debug("{}: {}", threadLocalId.get(), m);
     logAuditEvent(m);
   }
