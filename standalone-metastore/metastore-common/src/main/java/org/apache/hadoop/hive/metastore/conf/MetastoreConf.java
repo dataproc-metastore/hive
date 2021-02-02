@@ -428,6 +428,8 @@ public class MetastoreConf {
         "directory owner."),
     CUSTOM_SERVER_CLASS("metastore.custom.server.class", "hive.metastore.custom.server.class", "", "Driver class " +
             "name for a custom Hive Metastore server."),
+    CUSTOM_CLIENT_MANAGER("metastore.custom.client.manager.class", "hive.metastore.custom.client.manager.class", "",
+        "Client manager class name for a custom Hive client bootstrapping."),
     METASTORE_HOUSEKEEPING_LEADER_HOSTNAME("metastore.housekeeping.leader.hostname",
             "hive.metastore.housekeeping.leader.hostname", "",
 "If there are multiple Thrift metastore services running, the hostname of Thrift metastore " +
