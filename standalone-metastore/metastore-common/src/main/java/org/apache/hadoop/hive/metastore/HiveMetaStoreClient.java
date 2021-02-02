@@ -187,6 +187,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     localMetaStore = MetastoreConf.isEmbeddedMetaStore(msUri);
 
 
+    String customClientClassName = MetastoreConf.getVar(conf, ConfVars.CUSTOM_CLIENT_MANAGER);
+    if (!customClientClassName.isEmpty() || msUri.contains("grpc://")) {
+      try {
+        clientManager = (ClientManager) Class.forName(customClientClassName).newInstance();
+
+        client = clientManager.getClient(this.conf);
+        clientManager.open();
+        snapshotActiveConf();
+        return;
+      } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+        throw new MetaException("Error instantiating a gRPC client class: " + customClientClassName + "\n" +
+            "Make sure the class is on the classpath.");
+      }
+    }
+
     if (localMetaStore) {
       if (!allowEmbedded) {
         throw new MetaException("Embedded metastore is not allowed here. Please configure "
