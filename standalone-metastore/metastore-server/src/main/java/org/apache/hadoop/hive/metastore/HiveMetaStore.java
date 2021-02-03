@@ -242,7 +242,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
 
     String customServerClass = hiveconf.getProperty(ConfVars.CUSTOM_SERVER_CLASS.getVarname());
-    if (!customServerClass.isEmpty()) {
+    if (customServerClass != null && !customServerClass.isEmpty()) {
       Class<?> customServerLauncher = ClassLoader.getSystemClassLoader().loadClass(customServerClass);
       LOG.info("Loaded class {} as server launcher", customServerLauncher.getCanonicalName());
       MetastoreLauncher launcher = (MetastoreLauncher) customServerLauncher.newInstance();
