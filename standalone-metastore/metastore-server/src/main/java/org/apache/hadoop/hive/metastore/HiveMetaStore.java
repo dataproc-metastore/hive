@@ -236,9 +236,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     String customServerClass = hiveconf.getProperty(ConfVars.CUSTOM_SERVER_CLASS.getVarname());
     if (!customServerClass.isEmpty()) {
-      Class<?> customServerLauncher = ClassLoader.getSystemClassLoader().loadClass(customServerClass);
-      LOG.info("Loaded class {} as server launcher", customServerLauncher.getCanonicalName());
-      MetastoreLauncher launcher = (MetastoreLauncher) customServerLauncher.newInstance();
+      MetastoreLauncher launcher = getMetastoreLauncher(customServerClass);
       serverLaunchers.add(launcher);
     }
 
@@ -248,6 +246,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       executorService.execute(serverLauncher.configure(conf, cli));
     }
     shutdownHookMgr.addShutdownHook(executorService::shutdown, 10);
+  }
+
+  static MetastoreLauncher getMetastoreLauncher(String customServerClass) throws MetaException {
+    Class<?> customServerLauncher;
+    try {
+      customServerLauncher = ClassLoader.getSystemClassLoader().loadClass(customServerClass);
+    } catch (ClassNotFoundException e) {
+      throw new MetaException("Unable to find custom server launcher class. Check if " + customServerClass + " is on the classpath");
+    }
+    LOG.info("Loaded class {} as server launcher", customServerLauncher.getCanonicalName());
+    MetastoreLauncher launcher;
+    try {
+      launcher = (MetastoreLauncher) customServerLauncher.newInstance();
+    } catch (InstantiationException | IllegalAccessException e) {
+      throw new MetaException("Unable to instantiate custom server launcher class: " + customServerClass);
+    }
+    return launcher;
   }
 
   static int nextThreadId = 1000000;
